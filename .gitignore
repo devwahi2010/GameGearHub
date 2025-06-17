@@ -1,5 +1,29 @@
-venv/
+
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
 *.pyc
-.env
+.Python
+
+# Django
 db.sqlite3
+*.log
+media/
+staticfiles/
+.env
+
+# Virtualenv
+venv/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Docker
+*.pid
+*.swp
+docker-compose.override.yml

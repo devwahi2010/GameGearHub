@@ -1,6 +1,17 @@
-version: "3.9"
+
 
 services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: gamegearhub
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -8,3 +19,17 @@ services:
       - .:/code
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=gamegearhub
+      - DB_USER=dev
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,web
+
+
+
+volumes:
+  postgres_data:
