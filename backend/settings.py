@@ -27,9 +27,10 @@ DEBUG = True
 
 import os
 
-ALLOWED_HOSTS =[]
+ALLOWED_HOSTS =['*']
 
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 
@@ -47,9 +48,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'core',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -161,3 +165,7 @@ SIMPLE_JWT = {
     ),
     'TOKEN_BLACKLIST_ENABLED': True,
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]

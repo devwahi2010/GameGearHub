@@ -1,45 +1,33 @@
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-from core.serializers import LoginSerializer
-from rest_framework import generics
-from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
-from rest_framework import serializers
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework import status, generics, serializers
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from core.serializers import LoginSerializer
+
+User = get_user_model()
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
 
-        User = get_user_model()
-        try:
-            user = User.objects.get(email=email)
-            if not user.check_password(password):
-                raise Exception("Invalid password")
-        except Exception:
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        else:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
-
-
-User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,7 +57,6 @@ class ProfileView(APIView):
             "email": user.email,
             "full_name": user.full_name
         })
-
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gamegearhub-backend
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn backend.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: backend.settings
+      - key: DB_NAME
+        value: gamegearhub
+      - key: DB_USER
+        value: dev
+      - key: DB_PASSWORD
+        value: password
+      - key: DB_HOST
+        value: gamegearhub-db
+      - key: DB_PORT
+        value: 5432
