@@ -92,11 +92,11 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME", "gamegearhub"),
-        'USER': os.getenv("DB_USER", "dev"),
-        'PASSWORD': os.getenv("DB_PASSWORD", "password"),
-        'HOST': os.getenv("DB_HOST", "localhost"),
-        'PORT': os.getenv("DB_PORT", "5432"),
+        'NAME': 'gamegearhub',
+        'USER': 'dev',
+        'PASSWORD': 'cH7eWn4Dv0qeKLwGOBq9Il4Kqz7vsCW9',
+        'HOST': 'dpg-d19f5dndiees73atccf0-a',
+        'PORT': '5432',
     }
 }
 

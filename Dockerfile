@@ -14,5 +14,4 @@ RUN pip install -r requirements.txt
 
 COPY . /code/
 
-# 🟢 Updated CMD: Runs migrations + collectstatic + server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"]
