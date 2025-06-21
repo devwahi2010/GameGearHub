@@ -1,9 +1,14 @@
 {
-  "routes": [
+  "headers": {
+    "/**": {
+      "Cache-Control": "no-cache"
+    }
+  },
+  "cleanUrls": true,
+  "redirects": [
     {
-      "src": "/.*",
-      "status": 200,
-      "dest": "/index.html"
+      "source": "/**",
+      "destination": "/index.html"
     }
   ]
 }
