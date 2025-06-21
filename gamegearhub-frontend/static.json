@@ -1,13 +1,7 @@
 {
-  "headers": {
-    "/**": {
-      "Cache-Control": "no-cache"
-    }
-  },
-  "cleanUrls": true,
-  "redirects": [
+  "routes": [
     {
-      "source": "/**",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
