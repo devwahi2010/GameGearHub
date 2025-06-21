@@ -1,8 +1,8 @@
 {
+  "public": "dist",
   "routes": [
     {
       "src": "/.*",
-      "status": 200,
       "dest": "/index.html"
     }
   ]
