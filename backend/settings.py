@@ -165,8 +165,10 @@ SIMPLE_JWT = {
     ),
     'TOKEN_BLACKLIST_ENABLED': True,
 }
-
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "https://gamegearhub-frontend.onrender.com",
+    "https://iridescent-entremet-16a037.netlify.app",
 
 ]
+
+CORS_ALLOW_CREDENTIALS = True
