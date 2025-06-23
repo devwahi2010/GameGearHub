@@ -89,16 +89,32 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 import os
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gamegearhub',
-        'USER': 'dev',
-        'PASSWORD': 'cH7eWn4Dv0qeKLwGOBq9Il4Kqz7vsCW9',
-        'HOST': 'dpg-d19f5dndiees73atccf0-a',
-        'PORT': '5432',
+IS_RENDER = os.getenv("RENDER") == "true"
+
+if IS_RENDER:
+    # ✅ Production DB on Render
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'gamegearhub',
+            'USER': 'dev',
+            'PASSWORD': 'cH7eWn4Dv0qeKLwGOBq9Il4Kqz7vsCW9',
+            'HOST': 'dpg-d19f5dndiees73atccf0-a',
+            'PORT': '5432',
+        }
     }
-}
+else:
+    # ✅ Local Docker PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("POSTGRES_DB", "gamegearhub"),
+            'USER': os.getenv("POSTGRES_USER", "dev"),
+            'PASSWORD': os.getenv("POSTGRES_PASSWORD", "password"),
+            'HOST': os.getenv("POSTGRES_HOST", "db"),
+            'PORT': os.getenv("POSTGRES_PORT", "5432"),
+        }
+    }
 
 AUTH_USER_MODEL = 'core.CustomUser'
 

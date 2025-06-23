@@ -5,6 +5,7 @@ import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import RequireAuth from './auth/RequireAuth.jsx';
 import { AuthProvider } from './auth/AuthContext.jsx';
+import Devices from './pages/Devices.jsx';
 
 function App() {
   return (
@@ -18,6 +19,11 @@ function App() {
             <RequireAuth>
               <Profile />
             </RequireAuth>
+          } />
+          <Route path="/devices" element={
+            <RequireAuth>
+              <Devices />
+          </RequireAuth>
           } />
         </Routes>
       </Router>
