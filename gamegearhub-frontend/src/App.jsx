@@ -25,6 +25,11 @@ function App() {
               <Devices />
           </RequireAuth>
           } />
+          <Route path="/create-device" element={
+            <RequireAuth>
+              <CreateDevice />
+            </RequireAuth>
+          } />
         </Routes>
       </Router>
     </AuthProvider>
