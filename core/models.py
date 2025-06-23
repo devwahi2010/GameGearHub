@@ -39,22 +39,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-class Device(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
-    available_from = models.DateField()
-    available_to = models.DateField()
-    city = models.CharField(max_length=100)
-    rules = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.title
-
 class RentalRequest(models.Model):
     renter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rental_requests')
-    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='requests')
+    device = models.ForeignKey('core.Device', on_delete=models.CASCADE, related_name='requests')
     start_date = models.DateField()
     end_date = models.DateField()
     approved = models.BooleanField(default=False)
@@ -64,3 +51,16 @@ class Chat(models.Model):
     receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_messages')
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class Device(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    city = models.CharField(max_length=100)
+    price_per_day = models.DecimalField(max_digits=7, decimal_places=2)
+    available_from = models.DateField()
+    available_to = models.DateField()
+    rules = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.title
