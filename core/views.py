@@ -9,6 +9,9 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from .models import Device
 from .serializers import LoginSerializer, DeviceSerializer
 from rest_framework import serializers
+from .models import RentalRequest
+from .serializers import RentalRequestSerializer
+
 
 User = get_user_model()
 
@@ -107,3 +110,45 @@ class DeviceDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Device.objects.all()
+
+# Create rental request
+class CreateRentalRequestView(generics.CreateAPIView):
+    serializer_class = RentalRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(renter=self.request.user)
+
+# List my rental requests (I am the renter)
+class MyRentalsView(generics.ListAPIView):
+    serializer_class = RentalRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return RentalRequest.objects.filter(renter=self.request.user)
+
+# List rental requests for my devices (I am the owner)
+class ManageRequestsView(generics.ListAPIView):
+    serializer_class = RentalRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return RentalRequest.objects.filter(device__owner=self.request.user)
+
+# Approve/Reject rental request
+class ApproveRejectRentalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            req = RentalRequest.objects.get(pk=pk, device__owner=request.user)
+        except RentalRequest.DoesNotExist:
+            return Response({'detail': 'Request not found or unauthorized'}, status=404)
+
+        approved = request.data.get('approved', None)
+        if approved is None:
+            return Response({'detail': 'Missing approved field (true/false)'}, status=400)
+
+        req.approved = approved
+        req.save()
+        return Response({'detail': f'Request {"approved" if approved else "rejected"}'})

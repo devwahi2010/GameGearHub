@@ -4,6 +4,9 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from core.views import LogoutView
 from .views import DeviceListCreateView
 from .views import DeviceListCreateView, DeviceDetailView
+from .views import (
+    CreateRentalRequestView, MyRentalsView, ManageRequestsView, ApproveRejectRentalView
+)
 
 
 
@@ -15,4 +18,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('devices/', DeviceListCreateView.as_view(), name='device-list-create'),
     path('devices/<int:pk>/', DeviceDetailView.as_view(), name='device-detail'),
+    path('rent/<int:device_id>/', CreateRentalRequestView.as_view(), name='create-rent'),  # POST
+    path('my-rentals/', MyRentalsView.as_view(), name='my-rentals'),                       # GET
+    path('manage-requests/', ManageRequestsView.as_view(), name='manage-requests'),       # GET
+    path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject') 
 ]
