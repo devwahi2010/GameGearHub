@@ -7,7 +7,7 @@ from .views import DeviceListCreateView, DeviceDetailView
 from .views import (
     CreateRentalRequestView, MyRentalsView, ManageRequestsView, ApproveRejectRentalView
 )
-
+from .views import ChatListCreateView
 
 
 urlpatterns = [
@@ -21,5 +21,7 @@ urlpatterns = [
     path('rent/<int:device_id>/', CreateRentalRequestView.as_view(), name='create-rent'),  # POST
     path('my-rentals/', MyRentalsView.as_view(), name='my-rentals'),                       # GET
     path('manage-requests/', ManageRequestsView.as_view(), name='manage-requests'),       # GET
-    path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject') 
+    path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject'), 
+    path('requests/<int:request_id>/chat/', ChatListCreateView.as_view(), name='chat'),
+
 ]

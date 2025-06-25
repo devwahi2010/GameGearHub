@@ -11,7 +11,8 @@ from .serializers import LoginSerializer, DeviceSerializer
 from rest_framework import serializers
 from .models import RentalRequest
 from .serializers import RentalRequestSerializer
-
+from .models import Chat
+from .serializers import ChatSerializer
 
 User = get_user_model()
 
@@ -152,3 +153,28 @@ class ApproveRejectRentalView(APIView):
         req.approved = approved
         req.save()
         return Response({'detail': f'Request {"approved" if approved else "rejected"}'})
+    
+class ChatListCreateView(generics.ListCreateAPIView):
+    serializer_class = ChatSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        request_id = self.kwargs['request_id']
+        rental_request = get_object_or_404(RentalRequest, id=request_id)
+        user = self.request.user
+
+        if rental_request.renter != user and rental_request.device.owner != user:
+            return Chat.objects.none()
+
+        return Chat.objects.filter(request=rental_request)
+
+    def perform_create(self, serializer):
+        request_id = self.kwargs['request_id']
+        rental_request = get_object_or_404(RentalRequest, id=request_id)
+        user = self.request.user
+
+        # Authorization check
+        if rental_request.renter != user and rental_request.device.owner != user:
+            raise serializers.ValidationError("Not authorized to chat on this request.")
+
+        serializer.save(sender=user, request=rental_request)

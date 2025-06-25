@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Device
 from .models import RentalRequest
+from .models import Chat
 from rest_framework import serializers
 
 class LoginSerializer(serializers.Serializer):
@@ -22,3 +23,11 @@ class RentalRequestSerializer(serializers.ModelSerializer):
         model = RentalRequest
         fields = ['id', 'device', 'device_title', 'start_date', 'end_date', 'approved', 'renter_email']
         read_only_fields = ['approved', 'renter_email', 'device_title']
+
+class ChatSerializer(serializers.ModelSerializer):
+    sender_email = serializers.EmailField(source='sender.email', read_only=True)
+
+    class Meta:
+        model = Chat
+        fields = ['id', 'request', 'sender', 'sender_email', 'message', 'timestamp']
+        read_only_fields = ['sender', 'timestamp', 'sender_email']
