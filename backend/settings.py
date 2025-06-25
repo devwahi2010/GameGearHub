@@ -192,3 +192,10 @@ CORS_ALLOW_CREDENTIALS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "staticfiles"),  # optional if collecting extra files
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://iridescent-entremet-16a037.netlify.app"
+]
