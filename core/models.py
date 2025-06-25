@@ -3,10 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from django.conf import settings
 
-# --------------------------
-# Custom User Model
-# --------------------------
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -20,12 +16,8 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-
-        if not extra_fields.get('is_staff'):
-            raise ValueError('Superuser must have is_staff=True.')
-        if not extra_fields.get('is_superuser'):
-            raise ValueError('Superuser must have is_superuser=True.')
-
+        if not extra_fields.get('is_staff') or not extra_fields.get('is_superuser'):
+            raise ValueError('Superuser must have is_staff=True and is_superuser=True')
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -39,13 +31,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
-
     def __str__(self):
         return self.email
-
-# --------------------------
-# Device Listing
-# --------------------------
 
 class Device(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -56,13 +43,10 @@ class Device(models.Model):
     available_from = models.DateField()
     available_to = models.DateField()
     rules = models.TextField(blank=True)
+    image = models.ImageField(upload_to='device_images/', blank=True, null=True)
 
     def __str__(self):
         return self.title
-
-# --------------------------
-# Rental Requests
-# --------------------------
 
 class RentalRequest(models.Model):
     renter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rental_requests')
@@ -74,17 +58,11 @@ class RentalRequest(models.Model):
     def __str__(self):
         return f"{self.renter.email} → {self.device.title}"
 
-# --------------------------
-# Secure Chat
-# --------------------------
-
-# In models.py
 class Chat(models.Model):
-    request = models.ForeignKey('core.RentalRequest', on_delete=models.CASCADE, related_name='chats', null=True)  # 👈 add null=True for now
+    request = models.ForeignKey(RentalRequest, on_delete=models.CASCADE, related_name='chats', null=True)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.sender.email} @ {self.timestamp}"
-

@@ -1,15 +1,13 @@
 from rest_framework import serializers
-from .models import Device
-from .models import RentalRequest
-from .models import Chat
-from rest_framework import serializers
+from .models import Device, RentalRequest, Chat
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
-
 class DeviceSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
+
     class Meta:
         model = Device
         fields = '__all__'
