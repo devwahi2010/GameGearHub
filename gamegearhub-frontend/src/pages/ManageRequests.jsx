@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
+import { Container, Card, Button } from 'react-bootstrap';
 
 function ManageRequests() {
   const [requests, setRequests] = useState([]);
@@ -17,30 +18,32 @@ function ManageRequests() {
   }, []);
 
   const handleAction = (id, action) => {
-    axiosInstance.post(`manage-requests/${id}/${action}/`)
-      .then(() => fetchRequests())
+    axiosInstance.post(`manage-requests/${id}/${action}/`)  // ✅ fixed interpolation
+      .then(fetchRequests)
       .catch(err => console.error(err));
   };
 
   return (
-    <div>
+    <Container className="mt-4">
       <h2>Manage Incoming Rental Requests</h2>
       {requests.map(req => (
-        <div key={req.id} style={{ border: '1px solid #ccc', margin: '10px', padding: '10px' }}>
-          <p><strong>Device:</strong> {req.device_title}</p>
-          <p><strong>Renter:</strong> {req.renter_email}</p>
-          <p><strong>From:</strong> {req.start_date}</p>
-          <p><strong>To:</strong> {req.end_date}</p>
-          <p><strong>Status:</strong> {req.approved ? 'Approved ✅' : 'Pending ⏳'}</p>
-          {!req.approved && (
-            <>
-              <button onClick={() => handleAction(req.id, 'approve')}>Approve</button>
-              <button onClick={() => handleAction(req.id, 'reject')}>Reject</button>
-            </>
-          )}
-        </div>
+        <Card key={req.id} className="mb-3">
+          <Card.Body>
+            <Card.Title>{req.device_title}</Card.Title>
+            <Card.Text><strong>Renter:</strong> {req.renter_email}</Card.Text>
+            <Card.Text><strong>From:</strong> {req.start_date}</Card.Text>
+            <Card.Text><strong>To:</strong> {req.end_date}</Card.Text>
+            <Card.Text><strong>Status:</strong> {req.approved ? '✅ Approved' : '⏳ Pending'}</Card.Text>
+            {!req.approved && (
+              <>
+                <Button variant="success" size="sm" onClick={() => handleAction(req.id, 'approve')} className="me-2">Approve</Button>
+                <Button variant="danger" size="sm" onClick={() => handleAction(req.id, 'reject')}>Reject</Button>
+              </>
+            )}
+          </Card.Body>
+        </Card>
       ))}
-    </div>
+    </Container>
   );
 }
 

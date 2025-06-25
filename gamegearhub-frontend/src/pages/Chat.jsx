@@ -1,16 +1,18 @@
+// src/pages/Chat.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
+import { Container, Form, Button } from 'react-bootstrap';
 
 function Chat() {
   const { requestId } = useParams();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const [refresh, setRefresh] = useState(false);
 
   const fetchMessages = async () => {
     try {
-      const res = await axiosInstance.get(`/chat/${requestId}/`);
+      const res = await axiosInstance.get(`/chat/${requestId}/`);  // ✅ fixed
       setMessages(res.data);
     } catch (err) {
       console.error('Failed to load messages:', err);
@@ -26,32 +28,33 @@ function Chat() {
   const sendMessage = async () => {
     if (!text.trim()) return;
     try {
-      await axiosInstance.post(`/chat/${requestId}/`, { message: text });
+      await axiosInstance.post(`/chat/${requestId}/`, { message: text });  // ✅ fixed
       setText('');
-      setRefresh(!refresh); // trigger fetch
     } catch (err) {
       console.error('Send failed:', err);
     }
   };
 
   return (
-    <div>
+    <Container className="mt-4">
       <h2>Chat</h2>
-      <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px' }}>
+      <div className="border p-3 mb-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
         {messages.map((msg) => (
           <p key={msg.id} style={{ textAlign: msg.is_sender ? 'right' : 'left' }}>
             <strong>{msg.is_sender ? 'You' : 'Them'}:</strong> {msg.message}
           </p>
         ))}
       </div>
-      <input
-        type="text"
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder="Type a message"
-      />
-      <button onClick={sendMessage}>Send</button>
-    </div>
+      <Form className="d-flex">
+        <Form.Control
+          type="text"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="Type a message"
+        />
+        <Button variant="primary" onClick={sendMessage} className="ms-2">Send</Button>
+      </Form>
+    </Container>
   );
 }
 

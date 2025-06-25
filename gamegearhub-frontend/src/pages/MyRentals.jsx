@@ -1,7 +1,6 @@
-// src/pages/MyRentals.jsx
-
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
+import { Container, Card } from 'react-bootstrap';
 
 function MyRentals() {
   const [requests, setRequests] = useState([]);
@@ -9,21 +8,25 @@ function MyRentals() {
   useEffect(() => {
     axiosInstance.get('my-rentals/')
       .then(res => setRequests(res.data))
-      .catch(err => console.error(err));
+      .catch(console.error);
   }, []);
 
   return (
-    <div>
+    <Container className="mt-4">
       <h2>My Rental Requests</h2>
       {requests.map(req => (
-        <div key={req.id} style={{ border: '1px solid #ccc', margin: '10px', padding: '10px' }}>
-          <p><strong>Device:</strong> {req.device_title}</p>
-          <p><strong>From:</strong> {req.start_date}</p>
-          <p><strong>To:</strong> {req.end_date}</p>
-          <p><strong>Status:</strong> {req.approved ? 'Approved ✅' : 'Pending ⏳'}</p>
-        </div>
+        <Card key={req.id} className="mb-3">
+          <Card.Body>
+            <Card.Title>{req.device_title}</Card.Title>
+            <Card.Text>
+              <strong>From:</strong> {req.start_date} <br />
+              <strong>To:</strong> {req.end_date} <br />
+              <strong>Status:</strong> {req.approved ? '✅ Approved' : '⏳ Pending'}
+            </Card.Text>
+          </Card.Body>
+        </Card>
       ))}
-    </div>
+    </Container>
   );
 }
 
