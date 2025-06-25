@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { Container, Card, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 function ManageRequests() {
   const [requests, setRequests] = useState([]);
+  const navigate = useNavigate();
 
   const fetchRequests = () => {
     axiosInstance.get('manage-requests/')
@@ -18,7 +20,7 @@ function ManageRequests() {
   }, []);
 
   const handleAction = (id, action) => {
-    axiosInstance.post(`manage-requests/${id}/${action}/`)  // ✅ fixed interpolation
+    axiosInstance.post(`manage-requests/${id}/${action}/`)
       .then(fetchRequests)
       .catch(err => console.error(err));
   };
@@ -34,9 +36,16 @@ function ManageRequests() {
             <Card.Text><strong>From:</strong> {req.start_date}</Card.Text>
             <Card.Text><strong>To:</strong> {req.end_date}</Card.Text>
             <Card.Text><strong>Status:</strong> {req.approved ? '✅ Approved' : '⏳ Pending'}</Card.Text>
+            
+            {req.approved && (
+              <Button variant="info" size="sm" className="me-2" onClick={() => navigate(`/chat/${req.id}`)}>
+                💬 Chat
+              </Button>
+            )}
+
             {!req.approved && (
               <>
-                <Button variant="success" size="sm" onClick={() => handleAction(req.id, 'approve')} className="me-2">Approve</Button>
+                <Button variant="success" size="sm" className="me-2" onClick={() => handleAction(req.id, 'approve')}>Approve</Button>
                 <Button variant="danger" size="sm" onClick={() => handleAction(req.id, 'reject')}>Reject</Button>
               </>
             )}

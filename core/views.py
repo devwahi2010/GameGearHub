@@ -213,3 +213,10 @@ class OwnerProfileView(APIView):
             })
         except User.DoesNotExist:
             return Response({'error': 'Owner not found'}, status=404)
+
+class AllDevicesView(generics.ListAPIView):
+    serializer_class = DeviceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Device.objects.all()

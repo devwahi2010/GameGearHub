@@ -12,18 +12,25 @@ import ManageRequests from './pages/ManageRequests.jsx';
 import Chat from './pages/Chat.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import DeviceDetail from './pages/DeviceDetail.jsx';
+import OwnerProfile from './pages/OwnerProfile.jsx';
+import Explore from './pages/Explore.jsx';
 import RequireAuth from './auth/RequireAuth.jsx';
 import { AuthProvider } from './auth/AuthContext.jsx';
-import OwnerProfile from './pages/OwnerProfile.jsx';
+import AppNavbar from './components/Navbar.jsx';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <AppNavbar />
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/explore" element={<Explore />} />
+
+          {/* Protected Routes */}
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/devices" element={<RequireAuth><Devices /></RequireAuth>} />
           <Route path="/devices/:id" element={<RequireAuth><DeviceDetail /></RequireAuth>} />

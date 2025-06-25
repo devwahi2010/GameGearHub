@@ -1,6 +1,7 @@
 // src/pages/Login.jsx
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../auth/AuthContext';
 import { Container, Form, Button, Alert } from 'react-bootstrap';
@@ -23,7 +24,7 @@ function Login() {
       const res = await axiosInstance.post('login/', { email, password });
       login({ access: res.data.access, refresh: res.data.refresh });
       setError('');
-      navigate('/profile');
+      navigate('/dashboard');
     } catch (err) {
       setError('❌ Invalid email or password');
     }
@@ -54,6 +55,10 @@ function Login() {
         </Form.Group>
         <Button type="submit" variant="primary" className="w-100">Login</Button>
       </Form>
+
+      <p className="mt-3 text-center">
+        Don’t have an account? <Link to="/register">Register here</Link>
+      </p>
     </Container>
   );
 }

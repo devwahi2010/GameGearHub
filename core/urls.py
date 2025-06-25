@@ -9,6 +9,7 @@ from .views import (
 )
 from .views import ChatListCreateView
 from .views import OwnerProfileView
+from .views import AllDevicesView
 
 
 urlpatterns = [
@@ -25,5 +26,7 @@ urlpatterns = [
     path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject'), 
     path('requests/<int:request_id>/chat/', ChatListCreateView.as_view(), name='chat'),
     path('owner/<int:owner_id>/', OwnerProfileView.as_view(), name='owner-profile'),
+    path('public-devices/', AllDevicesView.as_view()),
+
 
 ]

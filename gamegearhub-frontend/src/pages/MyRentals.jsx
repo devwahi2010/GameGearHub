@@ -1,10 +1,14 @@
+// src/pages/MyRentals.jsx
+
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { Container, Card, ButtonGroup, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 function MyRentals() {
   const [requests, setRequests] = useState([]);
   const [filter, setFilter] = useState('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
     axiosInstance.get('my-rentals/')
@@ -37,6 +41,12 @@ function MyRentals() {
               <strong>To:</strong> {req.end_date} <br />
               <strong>Status:</strong> {req.approved ? '✅ Approved' : '⏳ Pending'}
             </Card.Text>
+
+            {req.approved && (
+              <Button variant="info" size="sm" onClick={() => navigate(`/chat/${req.id}`)}>
+                💬 Chat
+              </Button>
+            )}
           </Card.Body>
         </Card>
       ))}
