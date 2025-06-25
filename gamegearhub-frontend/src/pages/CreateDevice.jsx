@@ -1,7 +1,9 @@
+// src/pages/CreateDevice.jsx
+
 import React, { useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Image } from 'react-bootstrap';
 
 function CreateDevice() {
   const [formData, setFormData] = useState({
@@ -9,12 +11,19 @@ function CreateDevice() {
     price_per_day: '', available_from: '', available_to: '',
     rules: '', image: null,
   });
-  const navigate = useNavigate();
+
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData(prev => ({ ...prev, [name]: files ? files[0] : value }));
+    if (name === 'image' && files.length > 0) {
+      setFormData(prev => ({ ...prev, image: files[0] }));
+      setPreviewUrl(URL.createObjectURL(files[0]));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -27,14 +36,15 @@ function CreateDevice() {
       });
       navigate('/devices');
     } catch {
-      setError('Failed to create device');
+      setError('❌ Failed to create device');
     }
   };
 
   return (
     <Container className="mt-4">
-      <h2>Create Device</h2>
+      <h2>Create New Device Listing</h2>
       {error && <Alert variant="danger">{error}</Alert>}
+
       <Form onSubmit={handleSubmit} encType="multipart/form-data">
         <Form.Control name="title" placeholder="Title" onChange={handleChange} required className="mb-2" />
         <Form.Control as="textarea" name="description" placeholder="Description" onChange={handleChange} required className="mb-2" />
@@ -42,8 +52,15 @@ function CreateDevice() {
         <Form.Control name="price_per_day" type="number" placeholder="Price per day" onChange={handleChange} required className="mb-2" />
         <Form.Control name="available_from" type="date" onChange={handleChange} required className="mb-2" />
         <Form.Control name="available_to" type="date" onChange={handleChange} required className="mb-2" />
-        <Form.Control as="textarea" name="rules" placeholder="Rules" onChange={handleChange} className="mb-2" />
+        <Form.Control as="textarea" name="rules" placeholder="Rules (optional)" onChange={handleChange} className="mb-2" />
         <Form.Control name="image" type="file" accept="image/*" onChange={handleChange} className="mb-3" />
+
+        {previewUrl && (
+          <div className="mb-3">
+            <Image src={previewUrl} alt="Preview" thumbnail style={{ maxWidth: '200px' }} />
+          </div>
+        )}
+
         <Button type="submit" variant="primary">Submit</Button>
       </Form>
     </Container>

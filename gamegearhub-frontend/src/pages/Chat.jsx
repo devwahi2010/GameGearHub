@@ -1,5 +1,3 @@
-// src/pages/Chat.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
@@ -12,7 +10,7 @@ function Chat() {
 
   const fetchMessages = async () => {
     try {
-      const res = await axiosInstance.get(`/chat/${requestId}/`);  // ✅ fixed
+      const res = await axiosInstance.get(`/chat/${requestId}/`);
       setMessages(res.data);
     } catch (err) {
       console.error('Failed to load messages:', err);
@@ -21,14 +19,14 @@ function Chat() {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 3000); // Auto-refresh every 3s
+    const interval = setInterval(fetchMessages, 3000);
     return () => clearInterval(interval);
   }, [requestId]);
 
   const sendMessage = async () => {
     if (!text.trim()) return;
     try {
-      await axiosInstance.post(`/chat/${requestId}/`, { message: text });  // ✅ fixed
+      await axiosInstance.post(`/chat/${requestId}/`, { message: text });
       setText('');
     } catch (err) {
       console.error('Send failed:', err);
@@ -42,6 +40,8 @@ function Chat() {
         {messages.map((msg) => (
           <p key={msg.id} style={{ textAlign: msg.is_sender ? 'right' : 'left' }}>
             <strong>{msg.is_sender ? 'You' : 'Them'}:</strong> {msg.message}
+            <br />
+            <small className="text-muted">{new Date(msg.timestamp).toLocaleString()}</small>
           </p>
         ))}
       </div>
