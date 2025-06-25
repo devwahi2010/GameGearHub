@@ -197,3 +197,19 @@ class ChatListCreateView(generics.ListCreateAPIView):
             raise serializers.ValidationError("Not authorized to chat on this request.")
 
         serializer.save(sender=user, request=rental_request)
+
+class OwnerProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, owner_id):
+        try:
+            owner = User.objects.get(pk=owner_id)
+            devices = Device.objects.filter(owner=owner)
+            device_data = DeviceSerializer(devices, many=True).data
+            return Response({
+                "email": owner.email,
+                "full_name": owner.full_name,
+                "devices": device_data
+            })
+        except User.DoesNotExist:
+            return Response({'error': 'Owner not found'}, status=404)

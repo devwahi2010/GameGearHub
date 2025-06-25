@@ -8,6 +8,7 @@ from .views import (
     CreateRentalRequestView, MyRentalsView, ManageRequestsView, ApproveRejectRentalView
 )
 from .views import ChatListCreateView
+from .views import OwnerProfileView
 
 
 urlpatterns = [
@@ -23,5 +24,6 @@ urlpatterns = [
     path('manage-requests/', ManageRequestsView.as_view(), name='manage-requests'),       # GET
     path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject'), 
     path('requests/<int:request_id>/chat/', ChatListCreateView.as_view(), name='chat'),
+    path('owner/<int:owner_id>/', OwnerProfileView.as_view(), name='owner-profile'),
 
 ]
