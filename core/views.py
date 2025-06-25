@@ -13,6 +13,8 @@ from .models import RentalRequest
 from .serializers import RentalRequestSerializer
 from .models import Chat
 from .serializers import ChatSerializer
+from django.db.models import Q
+from rest_framework.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -113,12 +115,29 @@ class DeviceDetailView(generics.RetrieveAPIView):
         return Device.objects.all()
 
 # Create rental request
+
 class CreateRentalRequestView(generics.CreateAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(renter=self.request.user)
+        renter = self.request.user
+        device = serializer.validated_data['device']
+        start = serializer.validated_data['start_date']
+        end = serializer.validated_data['end_date']
+
+        conflict_exists = RentalRequest.objects.filter(
+            device=device,
+            approved=True,
+            start_date__lte=end,
+            end_date__gte=start
+        ).exists()
+
+        if conflict_exists:
+            raise ValidationError("⚠️ This device is already booked for the selected dates.")
+
+        serializer.save(renter=renter)
+
 
 # List my rental requests (I am the renter)
 class MyRentalsView(generics.ListAPIView):

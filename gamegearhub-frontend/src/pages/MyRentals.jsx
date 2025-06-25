@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
-import { Container, Card } from 'react-bootstrap';
+import { Container, Card, ButtonGroup, Button } from 'react-bootstrap';
 
 function MyRentals() {
   const [requests, setRequests] = useState([]);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     axiosInstance.get('my-rentals/')
@@ -11,10 +12,23 @@ function MyRentals() {
       .catch(console.error);
   }, []);
 
+  const filteredRequests = requests.filter(req => {
+    if (filter === 'approved') return req.approved;
+    if (filter === 'pending') return !req.approved;
+    return true;
+  });
+
   return (
     <Container className="mt-4">
       <h2>My Rental Requests</h2>
-      {requests.map(req => (
+
+      <ButtonGroup className="mb-3">
+        <Button variant={filter === 'all' ? 'dark' : 'outline-dark'} onClick={() => setFilter('all')}>All</Button>
+        <Button variant={filter === 'approved' ? 'success' : 'outline-success'} onClick={() => setFilter('approved')}>Approved</Button>
+        <Button variant={filter === 'pending' ? 'warning' : 'outline-warning'} onClick={() => setFilter('pending')}>Pending</Button>
+      </ButtonGroup>
+
+      {filteredRequests.map(req => (
         <Card key={req.id} className="mb-3">
           <Card.Body>
             <Card.Title>{req.device_title}</Card.Title>
@@ -26,6 +40,8 @@ function MyRentals() {
           </Card.Body>
         </Card>
       ))}
+
+      {filteredRequests.length === 0 && <p>No rental requests match this filter.</p>}
     </Container>
   );
 }
