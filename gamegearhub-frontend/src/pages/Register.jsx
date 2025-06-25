@@ -1,6 +1,4 @@
-// gamegearhub-frontend/src/pages/Register.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,28 +6,34 @@ function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [full_name, setFullName] = useState('');
-  const [success, setSuccess] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await axiosInstance.post('register/', { email, password, full_name });
-      setSuccess('Registered! You can now login.');
+      setMessage('✅ Registered successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setSuccess('Error occurred. Try again.');
+      setMessage('❌ Registration failed. Try again.');
     }
   };
 
   return (
     <div>
       <h2>Register</h2>
-      {success && <p>{success}</p>}
+      {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
+          name="full_name"
           value={full_name}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Full Name"
@@ -37,6 +41,7 @@ function Register() {
         /><br />
         <input
           type="email"
+          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
@@ -44,6 +49,7 @@ function Register() {
         /><br />
         <input
           type="password"
+          name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
@@ -56,3 +62,4 @@ function Register() {
 }
 
 export default Register;
+
