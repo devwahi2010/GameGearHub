@@ -5,14 +5,25 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
+# core/serializers.py
+
+from rest_framework import serializers
+from .models import Device
+
 class DeviceSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(required=False)
+    image = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Device
         fields = '__all__'
         read_only_fields = ['owner']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
     def get_is_owner(self, obj):
         request = self.context.get('request')

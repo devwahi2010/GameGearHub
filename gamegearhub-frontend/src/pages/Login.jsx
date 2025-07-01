@@ -47,7 +47,6 @@ function Login() {
         <Form.Group className="mb-3" controlId="loginPassword">
           <Form.Control
             type="password"
-            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required

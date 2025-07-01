@@ -96,6 +96,8 @@ class LogoutView(APIView):
 # ------------------------------
 # DEVICE VIEWS
 # ------------------------------
+
+# ✅ List and create only the logged-in user's devices
 class DeviceListCreateView(generics.ListCreateAPIView):
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -106,11 +108,10 @@ class DeviceListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def get_serializer_context(self):
+        return {'request': self.request}
 
-from rest_framework import generics, permissions
-from .models import Device
-from .serializers import DeviceSerializer
-
+# ✅ View any single device in detail
 class DeviceDetailView(generics.RetrieveAPIView):
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -120,7 +121,7 @@ class DeviceDetailView(generics.RetrieveAPIView):
 
     def get_serializer_context(self):
         return {'request': self.request}
-
+    
 # Create rental request
 
 class CreateRentalRequestView(generics.CreateAPIView):
@@ -153,6 +154,8 @@ class MyRentalsView(generics.ListAPIView):
 
     def get_queryset(self):
         return RentalRequest.objects.filter(renter=self.request.user)
+    def get_serializer_context(self):
+        return {'request': self.request}
 
 # List rental requests for my devices (I am the owner)
 class ManageRequestsView(generics.ListAPIView):
@@ -161,6 +164,8 @@ class ManageRequestsView(generics.ListAPIView):
 
     def get_queryset(self):
         return RentalRequest.objects.filter(device__owner=self.request.user)
+    def get_serializer_context(self):
+        return {'request': self.request}
 
 # Approve/Reject rental request
 class ApproveRejectRentalView(APIView):
@@ -227,3 +232,6 @@ class AllDevicesView(generics.ListAPIView):
 
     def get_queryset(self):
         return Device.objects.all()
+
+    def get_serializer_context(self):
+        return {'request': self.request}

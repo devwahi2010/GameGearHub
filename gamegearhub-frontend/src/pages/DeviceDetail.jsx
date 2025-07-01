@@ -27,19 +27,44 @@ function DeviceDetail() {
   return device ? (
     <div className="container mt-4">
       <h2>{device.title}</h2>
-      {device.image && <img src={device.image} alt={device.title} className="img-fluid my-3" style={{ maxWidth: '300px' }} />}
+      {device.image && (
+        <img
+          src={device.image}
+          alt={device.title}
+          className="img-fluid my-3"
+          style={{ maxWidth: '300px' }}
+        />
+      )}
       <p>{device.description}</p>
       <p>City: {device.city}</p>
       <p>Price: ₹{device.price_per_day} per day</p>
       <p>Available: {device.available_from} to {device.available_to}</p>
-      <form onSubmit={handleSubmit}>
-        <input type="date" name="start_date" required onChange={(e) => setDates({ ...dates, start_date: e.target.value })} />
-        <input type="date" name="end_date" required onChange={(e) => setDates({ ...dates, end_date: e.target.value })} />
-        <button className="btn btn-success btn-sm mx-2">Request Rental</button>
-      </form>
-      <p>{status}</p>
+
+      {device.is_owner ? (
+        <p className="text-muted">ℹ️ This is your own device listing.</p>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="date"
+            name="start_date"
+            required
+            onChange={(e) => setDates({ ...dates, start_date: e.target.value })}
+          />
+          <input
+            type="date"
+            name="end_date"
+            required
+            onChange={(e) => setDates({ ...dates, end_date: e.target.value })}
+          />
+          <button className="btn btn-success btn-sm mx-2">Request Rental</button>
+        </form>
+      )}
+
+      {status && <p>{status}</p>}
     </div>
-  ) : <p>Loading...</p>;
+  ) : (
+    <p>Loading...</p>
+  );
 }
 
 export default DeviceDetail;
