@@ -107,12 +107,19 @@ class DeviceListCreateView(generics.ListCreateAPIView):
         serializer.save(owner=self.request.user)
 
 
+from rest_framework import generics, permissions
+from .models import Device
+from .serializers import DeviceSerializer
+
 class DeviceDetailView(generics.RetrieveAPIView):
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Device.objects.all()
+
+    def get_serializer_context(self):
+        return {'request': self.request}
 
 # Create rental request
 

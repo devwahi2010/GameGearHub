@@ -7,11 +7,16 @@ class LoginSerializer(serializers.Serializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Device
         fields = '__all__'
         read_only_fields = ['owner']
+
+    def get_is_owner(self, obj):
+        request = self.context.get('request')
+        return request and request.user == obj.owner
 
 class RentalRequestSerializer(serializers.ModelSerializer):
     renter_email = serializers.EmailField(source='renter.email', read_only=True)
