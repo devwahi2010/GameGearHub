@@ -1,29 +1,29 @@
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
-from .models import Device
-from .serializers import LoginSerializer, DeviceSerializer
-from rest_framework import serializers
-from .models import RentalRequest
-from .serializers import RentalRequestSerializer
-from .models import Chat
-from .serializers import ChatSerializer
+from django.contrib.auth import authenticate, get_user_model
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-import logging
 
+from .models import Device, RentalRequest, Chat
+from .serializers import (
+    LoginSerializer, RegisterSerializer,
+    DeviceSerializer, RentalRequestSerializer, ChatSerializer
+)
+
+import logging
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-# ------------------------------
-# LOGIN VIEW
-# ------------------------------
+# --------------------------
+# LOGIN
+# --------------------------
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -44,31 +44,18 @@ class LoginView(APIView):
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# ------------------------------
-# REGISTER VIEW
-# ------------------------------
-class RegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email', 'password', 'full_name']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        return User.objects.create_user(
-            email=validated_data['email'],
-            password=validated_data['password'],
-            full_name=validated_data.get('full_name', '')
-        )
-
+# --------------------------
+# REGISTER
+# --------------------------
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
 
-# ------------------------------
-# PROFILE VIEW
-# ------------------------------
+# --------------------------
+# PROFILE
+# --------------------------
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,9 +67,9 @@ class ProfileView(APIView):
         })
 
 
-# ------------------------------
-# LOGOUT VIEW
-# ------------------------------
+# --------------------------
+# LOGOUT
+# --------------------------
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -96,11 +83,9 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ------------------------------
+# --------------------------
 # DEVICE VIEWS
-# ------------------------------
-
-# ✅ List and create only the logged-in user's devices
+# --------------------------
 class DeviceListCreateView(generics.ListCreateAPIView):
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -114,7 +99,7 @@ class DeviceListCreateView(generics.ListCreateAPIView):
     def get_serializer_context(self):
         return {'request': self.request}
 
-# ✅ View any single device in detail
+
 class DeviceDetailView(generics.RetrieveAPIView):
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -124,8 +109,22 @@ class DeviceDetailView(generics.RetrieveAPIView):
 
     def get_serializer_context(self):
         return {'request': self.request}
-    
-# Create rental request
+
+
+class AllDevicesView(generics.ListAPIView):
+    serializer_class = DeviceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Device.objects.all()
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+
+# --------------------------
+# RENTAL VIEWS
+# --------------------------
 class CreateRentalRequestView(generics.CreateAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
@@ -134,7 +133,6 @@ class CreateRentalRequestView(generics.CreateAPIView):
         renter = self.request.user
         data = serializer.validated_data
 
-        # ✅ Use logger instead of print
         logger.info("📦 Incoming rental request data: %s", data)
 
         device = data['device']
@@ -155,27 +153,30 @@ class CreateRentalRequestView(generics.CreateAPIView):
             raise ValidationError("⚠️ This device is already booked for the selected dates.")
 
         serializer.save(renter=renter)
-# List my rental requests (I am the renter)
+
+
 class MyRentalsView(generics.ListAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return RentalRequest.objects.filter(renter=self.request.user)
+
     def get_serializer_context(self):
         return {'request': self.request}
 
-# List rental requests for my devices (I am the owner)
+
 class ManageRequestsView(generics.ListAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return RentalRequest.objects.filter(device__owner=self.request.user)
+
     def get_serializer_context(self):
         return {'request': self.request}
 
-# Approve/Reject rental request
+
 class ApproveRejectRentalView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -192,7 +193,11 @@ class ApproveRejectRentalView(APIView):
         req.approved = approved
         req.save()
         return Response({'detail': f'Request {"approved" if approved else "rejected"}'})
-    
+
+
+# --------------------------
+# CHAT
+# --------------------------
 class ChatListCreateView(generics.ListCreateAPIView):
     serializer_class = ChatSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -212,12 +217,15 @@ class ChatListCreateView(generics.ListCreateAPIView):
         rental_request = get_object_or_404(RentalRequest, id=request_id)
         user = self.request.user
 
-        # Authorization check
         if rental_request.renter != user and rental_request.device.owner != user:
             raise serializers.ValidationError("Not authorized to chat on this request.")
 
         serializer.save(sender=user, request=rental_request)
 
+
+# --------------------------
+# OWNER PROFILE
+# --------------------------
 class OwnerProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -225,7 +233,7 @@ class OwnerProfileView(APIView):
         try:
             owner = User.objects.get(pk=owner_id)
             devices = Device.objects.filter(owner=owner)
-            device_data = DeviceSerializer(devices, many=True).data
+            device_data = DeviceSerializer(devices, many=True, context={'request': request}).data
             return Response({
                 "email": owner.email,
                 "full_name": owner.full_name,
@@ -233,13 +241,3 @@ class OwnerProfileView(APIView):
             })
         except User.DoesNotExist:
             return Response({'error': 'Owner not found'}, status=404)
-
-class AllDevicesView(generics.ListAPIView):
-    serializer_class = DeviceSerializer
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        return Device.objects.all()
-
-    def get_serializer_context(self):
-        return {'request': self.request}
