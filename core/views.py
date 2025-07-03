@@ -15,6 +15,9 @@ from .models import Chat
 from .serializers import ChatSerializer
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -123,27 +126,24 @@ class DeviceDetailView(generics.RetrieveAPIView):
         return {'request': self.request}
     
 # Create rental request
-
-
 class CreateRentalRequestView(generics.CreateAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         renter = self.request.user
-        device = serializer.validated_data['device']
-        start = serializer.validated_data['start_date']
-        end = serializer.validated_data['end_date']
+        data = serializer.validated_data
 
-        # ✅ Check that start_date is before end_date
+        # ✅ Use logger instead of print
+        logger.info("📦 Incoming rental request data: %s", data)
+
+        device = data['device']
+        start = data['start_date']
+        end = data['end_date']
+
         if start >= end:
             raise ValidationError("⚠️ End date must be after start date.")
 
-        # ✅ Prevent renting your own device
-        if device.owner == renter:
-            raise ValidationError("⚠️ You cannot rent your own device.")
-
-        # ✅ Check for overlapping approved rentals
         conflict_exists = RentalRequest.objects.filter(
             device=device,
             approved=True,
@@ -154,12 +154,7 @@ class CreateRentalRequestView(generics.CreateAPIView):
         if conflict_exists:
             raise ValidationError("⚠️ This device is already booked for the selected dates.")
 
-        # ✅ Save the rental request
-        try:
-            serializer.save(renter=renter)
-        except Exception as e:
-            print("Validation Error:", serializer.errors)
-            raise ValidationError(serializer.errors)
+        serializer.save(renter=renter)
 # List my rental requests (I am the renter)
 class MyRentalsView(generics.ListAPIView):
     serializer_class = RentalRequestSerializer
