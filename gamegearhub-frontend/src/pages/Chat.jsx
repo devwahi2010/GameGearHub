@@ -1,19 +1,21 @@
+// src/pages/Chat.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
-import { Container, Form, Button } from 'react-bootstrap';
+import { Container, Form, Button, Image } from 'react-bootstrap';
 
 function Chat() {
   const { requestId } = useParams();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const [image, setImage] = useState(null);
 
   const fetchMessages = async () => {
     try {
       const res = await axiosInstance.get(`/chat/${requestId}/`);
       setMessages(res.data);
     } catch (err) {
-      console.error('Failed to load messages:', err);
+      console.error('❌ Failed to load messages:', err);
     }
   };
 
@@ -24,35 +26,66 @@ function Chat() {
   }, [requestId]);
 
   const sendMessage = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() && !image) return;
+    const formData = new FormData();
+    formData.append('message', text);
+    if (image) formData.append('image', image);
+
     try {
-      await axiosInstance.post(`/chat/${requestId}/`, { message: text });
+      await axiosInstance.post(`/chat/${requestId}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setText('');
+      setImage(null);
+      fetchMessages();
     } catch (err) {
-      console.error('Send failed:', err);
+      console.error('❌ Failed to send message:', err);
     }
   };
 
   return (
     <Container className="mt-4">
-      <h2>Chat</h2>
-      <div className="border p-3 mb-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+      <h2>Secure Chat</h2>
+
+      <div
+        className="border rounded p-3 mb-4"
+        style={{ maxHeight: '400px', overflowY: 'auto', backgroundColor: '#fff' }}
+      >
+        {messages.length === 0 && <p className="text-muted">No messages yet.</p>}
         {messages.map((msg) => (
-          <p key={msg.id} style={{ textAlign: msg.is_sender ? 'right' : 'left' }}>
-            <strong>{msg.is_sender ? 'You' : 'Them'}:</strong> {msg.message}
-            <br />
+          <div key={msg.id} style={{ textAlign: msg.is_sender ? 'right' : 'left' }}>
+            <p className="mb-1">
+              <strong>{msg.is_sender ? 'You' : msg.sender_email}:</strong> {msg.message}
+            </p>
+            {msg.image && (
+              <div className="mb-2">
+                <Image
+                  src={msg.image}
+                  alt="Chat Image"
+                  thumbnail
+                  style={{ maxWidth: '180px', marginTop: '5px' }}
+                />
+              </div>
+            )}
             <small className="text-muted">{new Date(msg.timestamp).toLocaleString()}</small>
-          </p>
+            <hr />
+          </div>
         ))}
       </div>
-      <Form className="d-flex">
+
+      <Form className="d-flex flex-column flex-md-row gap-2">
         <Form.Control
           type="text"
+          placeholder="Type a message..."
           value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder="Type a message"
+          onChange={(e) => setText(e.target.value)}
         />
-        <Button variant="primary" onClick={sendMessage} className="ms-2">Send</Button>
+        <Form.Control
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files[0])}
+        />
+        <Button onClick={sendMessage} variant="primary">Send</Button>
       </Form>
     </Container>
   );

@@ -40,7 +40,7 @@ class RentalRequestSerializer(serializers.ModelSerializer):
 
 class ChatSerializer(serializers.ModelSerializer):
     sender_email = serializers.EmailField(source='sender.email', read_only=True)
-
+    image = serializers.ImageField(required=False)
     class Meta:
         model = Chat
         fields = ['id', 'request', 'sender', 'sender_email', 'message', 'timestamp']

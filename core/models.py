@@ -62,8 +62,10 @@ class RentalRequest(models.Model):
 class Chat(models.Model):
     request = models.ForeignKey(RentalRequest, on_delete=models.CASCADE, related_name='chats', null=True)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
-    message = models.TextField()
+    message = models.TextField(blank=True)
+    image = models.ImageField(upload_to='chat_images/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender.email} @ {self.timestamp}"
+        content = self.message if self.message else "📷 Image"
+        return f"{self.sender.email} @ {self.timestamp} — {content[:30]}"
