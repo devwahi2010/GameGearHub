@@ -124,6 +124,7 @@ class DeviceDetailView(generics.RetrieveAPIView):
     
 # Create rental request
 
+
 class CreateRentalRequestView(generics.CreateAPIView):
     serializer_class = RentalRequestSerializer
     permission_classes = [IsAuthenticated]
@@ -134,19 +135,22 @@ class CreateRentalRequestView(generics.CreateAPIView):
         start = serializer.validated_data['start_date']
         end = serializer.validated_data['end_date']
 
+        # ✅ Check that start_date is before end_date
+        if start >= end:
+            raise ValidationError("⚠️ End date must be after start date.")
+
+        # ✅ Check for overlapping approved rentals
         conflict_exists = RentalRequest.objects.filter(
             device=device,
             approved=True,
-            start_date__lte=end,
-            end_date__gte=start
+            start_date__lt=end,
+            end_date__gt=start
         ).exists()
 
         if conflict_exists:
             raise ValidationError("⚠️ This device is already booked for the selected dates.")
 
         serializer.save(renter=renter)
-
-
 # List my rental requests (I am the renter)
 class MyRentalsView(generics.ListAPIView):
     serializer_class = RentalRequestSerializer
