@@ -56,6 +56,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 class RentalRequestSerializer(serializers.ModelSerializer):
     renter_email = serializers.EmailField(source='renter.email', read_only=True)
     device_title = serializers.CharField(source='device.title', read_only=True)
+    device = serializers.PrimaryKeyRelatedField(queryset=Device.objects.all(), required=False)
 
     class Meta:
         model = RentalRequest

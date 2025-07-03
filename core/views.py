@@ -131,13 +131,10 @@ class CreateRentalRequestView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         renter = self.request.user
-        data = serializer.validated_data
-
-        logger.info("📦 Incoming rental request data: %s", data)
-
-        device = data['device']
-        start = data['start_date']
-        end = data['end_date']
+        device_id = self.kwargs.get('device_id')  # from URL
+        device = Device.objects.get(pk=device_id)
+        start = serializer.validated_data['start_date']
+        end = serializer.validated_data['end_date']
 
         if start >= end:
             raise ValidationError("⚠️ End date must be after start date.")
@@ -152,7 +149,7 @@ class CreateRentalRequestView(generics.CreateAPIView):
         if conflict_exists:
             raise ValidationError("⚠️ This device is already booked for the selected dates.")
 
-        serializer.save(renter=renter)
+        serializer.save(renter=renter, device=device)
 
 
 class MyRentalsView(generics.ListAPIView):

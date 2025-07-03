@@ -43,7 +43,9 @@ function DeviceDetail() {
     }
   };
 
-  return device ? (
+  if (!device) return <p>Loading...</p>;
+
+  return (
     <div className="container mt-4">
       <h2>{device.title}</h2>
       {device.image && (
@@ -67,20 +69,20 @@ function DeviceDetail() {
             <input
               type="date"
               name="start_date"
-              value={dates.start_date}
-              required
-              onChange={(e) => setDates({ ...dates, start_date: e.target.value })}
               className="form-control"
+              value={dates.start_date}
+              onChange={(e) => setDates({ ...dates, start_date: e.target.value })}
+              required
             />
           </div>
           <div className="mb-2">
             <input
               type="date"
               name="end_date"
-              value={dates.end_date}
-              required
-              onChange={(e) => setDates({ ...dates, end_date: e.target.value })}
               className="form-control"
+              value={dates.end_date}
+              onChange={(e) => setDates({ ...dates, end_date: e.target.value })}
+              required
             />
           </div>
           <button type="submit" className="btn btn-success btn-sm mx-2" disabled={isSubmitting}>
@@ -92,8 +94,6 @@ function DeviceDetail() {
       {error && <p className="text-danger mt-2">{error}</p>}
       {status && <p className="text-success mt-2">{status}</p>}
     </div>
-  ) : (
-    <p>Loading...</p>
   );
 }
 

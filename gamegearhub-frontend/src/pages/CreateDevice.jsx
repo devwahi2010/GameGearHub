@@ -1,5 +1,3 @@
-// src/pages/CreateDevice.jsx
-
 import React, { useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +9,7 @@ function CreateDevice() {
     title: '', description: '', city: '',
     price_per_day: '', available_from: '', available_to: '',
     rules: '', image: null,
+    latitude: '', longitude: '',
   });
 
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -27,13 +26,17 @@ function CreateDevice() {
     }
   };
 
+  const handleMapSelect = (lat, lng) => {
+    setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const form = new FormData();
       Object.entries(formData).forEach(([key, val]) => form.append(key, val));
       await axiosInstance.post('devices/', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       navigate('/devices');
     } catch {
@@ -61,6 +64,16 @@ function CreateDevice() {
             <Image src={previewUrl} alt="Preview" thumbnail style={{ maxWidth: '200px' }} />
           </div>
         )}
+
+        {/* 🗺️ MapPicker to select location */}
+        <div className="mb-3">
+          <MapPicker onLocationSelect={handleMapSelect} />
+          {formData.latitude && formData.longitude && (
+            <small className="text-muted">
+              Selected Location: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
+            </small>
+          )}
+        </div>
 
         <Button type="submit" variant="primary">Submit</Button>
       </Form>
