@@ -139,6 +139,10 @@ class CreateRentalRequestView(generics.CreateAPIView):
         if start >= end:
             raise ValidationError("⚠️ End date must be after start date.")
 
+        # ✅ Prevent renting your own device
+        if device.owner == renter:
+            raise ValidationError("⚠️ You cannot rent your own device.")
+
         # ✅ Check for overlapping approved rentals
         conflict_exists = RentalRequest.objects.filter(
             device=device,
@@ -150,7 +154,12 @@ class CreateRentalRequestView(generics.CreateAPIView):
         if conflict_exists:
             raise ValidationError("⚠️ This device is already booked for the selected dates.")
 
-        serializer.save(renter=renter)
+        # ✅ Save the rental request
+        try:
+            serializer.save(renter=renter)
+        except Exception as e:
+            print("Validation Error:", serializer.errors)
+            raise ValidationError(serializer.errors)
 # List my rental requests (I am the renter)
 class MyRentalsView(generics.ListAPIView):
     serializer_class = RentalRequestSerializer
