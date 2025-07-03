@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Form, Button, Alert, Image } from 'react-bootstrap';
+import MapPicker from '../components/MapPicker';
 
 function CreateDevice() {
   const [formData, setFormData] = useState({

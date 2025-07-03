@@ -45,6 +45,8 @@ class Device(models.Model):
     available_to = models.DateField()
     rules = models.TextField(blank=True)
     image = models.ImageField(upload_to='device_images/', blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.title
