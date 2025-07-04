@@ -19,8 +19,9 @@ urlpatterns = [
 
     path('rent/<int:device_id>/', CreateRentalRequestView.as_view(), name='create-rent'),
     path('my-rentals/', MyRentalsView.as_view(), name='my-rentals'),
+
     path('manage-requests/', ManageRequestsView.as_view(), name='manage-requests'),
-    path('approve-request/<int:pk>/', ApproveRejectRentalView.as_view(), name='approve-reject'),
+    path('manage-requests/<int:pk>/<str:action>/', ApproveRejectRentalView.as_view(), name='approve-reject-action'),
 
     path('requests/<int:request_id>/chat/', ChatListCreateView.as_view(), name='chat'),
     path('owner/<int:owner_id>/', OwnerProfileView.as_view(), name='owner-profile'),
