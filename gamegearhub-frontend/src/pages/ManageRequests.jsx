@@ -1,5 +1,3 @@
-// src/pages/ManageRequests.jsx
-
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { Container, Card, Button } from 'react-bootstrap';
@@ -19,15 +17,18 @@ function ManageRequests() {
     fetchRequests();
   }, []);
 
-  const handleAction = (id, action) => {
-    axiosInstance.post(`manage-requests/${id}/${action}/`)
-      .then(fetchRequests)
-      .catch(err => console.error('Failed to update status', err));
+  const handleAction = async (id, action) => {
+    try {
+      await axiosInstance.post(`manage-requests/${id}/${action}/`);
+      fetchRequests();
+    } catch (err) {
+      console.error(`Failed to ${action} rental request`, err);
+    }
   };
 
   return (
     <Container className="mt-4">
-      <h2 className="mb-4">Manage Incoming Rental Requests</h2>
+      <h2 className="mb-4">📥 Manage Incoming Rental Requests</h2>
 
       {requests.length === 0 && (
         <p className="text-muted">You don’t have any rental requests yet.</p>
