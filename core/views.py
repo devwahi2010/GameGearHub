@@ -206,9 +206,9 @@ class ChatListCreateView(generics.ListCreateAPIView):
         user = self.request.user
 
         if rental_request.renter != user and rental_request.device.owner != user:
-            return Chat.objects.none()
+            raise serializers.ValidationError("🚫 You are not authorized to view this chat.")
 
-        return Chat.objects.filter(request=rental_request)
+        return Chat.objects.filter(request=rental_request).order_by('timestamp')
 
     def perform_create(self, serializer):
         request_id = self.kwargs['request_id']
@@ -216,11 +216,12 @@ class ChatListCreateView(generics.ListCreateAPIView):
         user = self.request.user
 
         if rental_request.renter != user and rental_request.device.owner != user:
-            raise serializers.ValidationError("Not authorized to chat on this request.")
+            raise serializers.ValidationError("🚫 You are not authorized to send messages on this request.")
 
         serializer.save(sender=user, request=rental_request)
 
-
+    def get_serializer_context(self):
+        return {'request': self.request}
 # --------------------------
 # OWNER PROFILE
 # --------------------------
