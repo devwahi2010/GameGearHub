@@ -19,7 +19,6 @@ L.Icon.Default.mergeOptions({
 // 🔍 Component to programmatically move map
 function MapFlyTo({ coords }) {
   const map = useMap();
-
   useEffect(() => {
     if (coords) {
       map.flyTo([parseFloat(coords.latitude), parseFloat(coords.longitude)], 14, {
@@ -27,7 +26,6 @@ function MapFlyTo({ coords }) {
       });
     }
   }, [coords, map]);
-
   return null;
 }
 
@@ -53,8 +51,7 @@ function Explore() {
     const keyword = e.target.value.toLowerCase();
     setSearch(keyword);
     const filtered = devices.filter(d =>
-      d.title.toLowerCase().includes(keyword) ||
-      d.city.toLowerCase().includes(keyword)
+      d.title.toLowerCase().includes(keyword) || d.city.toLowerCase().includes(keyword)
     );
     setFilteredDevices(filtered);
   };
@@ -129,17 +126,23 @@ function Explore() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
             />
+
             {focusedCoords && <MapFlyTo coords={focusedCoords} />}
+
             {filteredDevices.map((dev) => (
               dev.latitude && dev.longitude && (
-                <Marker
-                  key={dev.id}
-                  position={[parseFloat(dev.latitude), parseFloat(dev.longitude)]}
-                >
+                <Marker key={dev.id} position={[parseFloat(dev.latitude), parseFloat(dev.longitude)]}>
                   <Popup>
                     <strong>{dev.title}</strong><br />
                     ₹{dev.price_per_day}/day<br />
-                    {dev.city}
+                    {dev.city}<br />
+                    <Button
+                      size="sm"
+                      variant="link"
+                      onClick={() => navigate(`/devices/${dev.id}`)}
+                    >
+                      View
+                    </Button>
                   </Popup>
                 </Marker>
               )

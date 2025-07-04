@@ -1,18 +1,18 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // Set in .env file
-  withCredentials: false, // no cookies used for JWT, only Authorization header
+  baseURL: import.meta.env.VITE_API_BASE_URL, // e.g., https://gamegearhub.onrender.com/api
+  withCredentials: false, // we use Authorization header, not cookies
 });
 
-// Attach access token if available (except on login/register routes)
+// Request interceptor: Add token to headers unless it's a public route
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('access');
-    const isPublicRoute = config.url.includes('login') || config.url.includes('register');
+    const token = localStorage.getItem('access');
+    const isPublic = config.url.includes('/login') || config.url.includes('/register');
 
-    if (accessToken && !isPublicRoute) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (token && !isPublic) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
@@ -20,13 +20,12 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle errors globally if needed
+// Optional global response error logging
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Optional: log network/server errors
     if (!error.response) {
-      console.error("🌐 Network error or server unreachable", error.message);
+      console.error("🌐 Network error or server unreachable:", error.message);
     }
     return Promise.reject(error);
   }
