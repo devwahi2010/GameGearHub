@@ -177,20 +177,21 @@ class ManageRequestsView(generics.ListAPIView):
 class ApproveRejectRentalView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, pk):
+    def post(self, request, pk, action):
         try:
             req = RentalRequest.objects.get(pk=pk, device__owner=request.user)
         except RentalRequest.DoesNotExist:
-            return Response({'detail': 'Request not found or unauthorized'}, status=404)
+            return Response({'detail': 'Request not found or unauthorized'}, status=status.HTTP_404_NOT_FOUND)
 
-        approved = request.data.get('approved', None)
-        if approved is None:
-            return Response({'detail': 'Missing approved field (true/false)'}, status=400)
+        if action == 'approve':
+            req.approved = True
+        elif action == 'reject':
+            req.approved = False
+        else:
+            return Response({'detail': 'Invalid action. Use "approve" or "reject".'}, status=status.HTTP_400_BAD_REQUEST)
 
-        req.approved = approved
         req.save()
-        return Response({'detail': f'Request {"approved" if approved else "rejected"}'})
-
+        return Response({'detail': f'Request {"approved" if req.approved else "rejected"}'})
 
 # --------------------------
 # CHAT
