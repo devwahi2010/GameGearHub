@@ -1,4 +1,5 @@
 // src/pages/Chat.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
@@ -12,7 +13,7 @@ function Chat() {
 
   const fetchMessages = async () => {
     try {
-      const res = await axiosInstance.get(`/chat/${requestId}/`);
+      const res = await axiosInstance.get(`/requests/${requestId}/chat/`); // ✅ corrected URL
       setMessages(res.data);
     } catch (err) {
       console.error('❌ Failed to load messages:', err);
@@ -32,7 +33,7 @@ function Chat() {
     if (image) formData.append('image', image);
 
     try {
-      await axiosInstance.post(`/chat/${requestId}/`, formData, {
+      await axiosInstance.post(`/requests/${requestId}/chat/`, formData, { // ✅ corrected URL
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setText('');

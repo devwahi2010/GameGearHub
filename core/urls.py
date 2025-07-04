@@ -1,3 +1,4 @@
+# core/urls.py
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from core.views import (
@@ -19,12 +20,12 @@ urlpatterns = [
 
     path('rent/<int:device_id>/', CreateRentalRequestView.as_view(), name='create-rent'),
     path('my-rentals/', MyRentalsView.as_view(), name='my-rentals'),
-
     path('manage-requests/', ManageRequestsView.as_view(), name='manage-requests'),
     path('manage-requests/<int:pk>/<str:action>/', ApproveRejectRentalView.as_view(), name='approve-reject-action'),
 
+    # ✅ Correct Chat URL pattern
     path('requests/<int:request_id>/chat/', ChatListCreateView.as_view(), name='chat'),
-    path('owner/<int:owner_id>/', OwnerProfileView.as_view(), name='owner-profile'),
 
+    path('owner/<int:owner_id>/', OwnerProfileView.as_view(), name='owner-profile'),
     path('public-devices/', AllDevicesView.as_view(), name='public-devices'),
 ]
