@@ -1,5 +1,3 @@
-// src/pages/Explore.jsx
-
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
@@ -8,7 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// 🛠️ Fix Leaflet icon loading in Webpack/Vite
+// 🛠️ Fix Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -16,14 +14,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// 🔍 Component to programmatically move map
+// 🔍 Smooth fly-to map focus
 function MapFlyTo({ coords }) {
   const map = useMap();
   useEffect(() => {
     if (coords) {
-      map.flyTo([parseFloat(coords.latitude), parseFloat(coords.longitude)], 14, {
-        duration: 1.5,
-      });
+      map.flyTo([parseFloat(coords.latitude), parseFloat(coords.longitude)], 14, { duration: 1.5 });
     }
   }, [coords, map]);
   return null;
@@ -36,7 +32,6 @@ function Explore() {
   const [focusedCoords, setFocusedCoords] = useState(null);
   const navigate = useNavigate();
 
-  // 🔄 Fetch devices on load
   useEffect(() => {
     axiosInstance.get('public-devices/')
       .then(res => {
@@ -46,7 +41,6 @@ function Explore() {
       .catch(console.error);
   }, []);
 
-  // 🔍 Search filter
   const handleSearch = (e) => {
     const keyword = e.target.value.toLowerCase();
     setSearch(keyword);
@@ -61,7 +55,7 @@ function Explore() {
       <h2 className="mb-3 text-center">🔍 Explore Rentable Devices Near You</h2>
 
       <Row>
-        {/* Left Column: Search & List */}
+        {/* Sidebar */}
         <Col md={4} className="pe-md-0 mb-3">
           <Form.Control
             type="text"
@@ -83,17 +77,9 @@ function Explore() {
               )}
               <Card.Body>
                 <Card.Title>{dev.title}</Card.Title>
-                <Card.Text>
-                  {dev.city} • ₹{dev.price_per_day}/day
-                </Card.Text>
+                <Card.Text>{dev.city} • ₹{dev.price_per_day}/day</Card.Text>
                 <div className="d-flex justify-content-between">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => navigate(`/devices/${dev.id}`)}
-                  >
-                    View
-                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => navigate(`/devices/${dev.id}`)}>View</Button>
                   {dev.latitude && dev.longitude && (
                     <Button
                       variant="outline-secondary"
@@ -114,24 +100,28 @@ function Explore() {
           ))}
         </Col>
 
-        {/* Right Column: Leaflet Map */}
+        {/* Map */}
         <Col md={8}>
           <MapContainer
-            center={[20.5937, 78.9629]} // Default: India
+            center={[20.5937, 78.9629]} // Center on India
             zoom={5}
             scrollWheelZoom={true}
             style={{ height: '80vh', width: '100%' }}
           >
+            {/* ✅ OSM India tile server */}
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              url="https://tile.osmindia.org/osm/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://osm-india.org/">OSM India</a> contributors'
             />
 
             {focusedCoords && <MapFlyTo coords={focusedCoords} />}
 
-            {filteredDevices.map((dev) => (
-              dev.latitude && dev.longitude && (
-                <Marker key={dev.id} position={[parseFloat(dev.latitude), parseFloat(dev.longitude)]}>
+            {filteredDevices.map((dev) =>
+              dev.latitude && dev.longitude ? (
+                <Marker
+                  key={dev.id}
+                  position={[parseFloat(dev.latitude), parseFloat(dev.longitude)]}
+                >
                   <Popup>
                     <strong>{dev.title}</strong><br />
                     ₹{dev.price_per_day}/day<br />
@@ -145,8 +135,8 @@ function Explore() {
                     </Button>
                   </Popup>
                 </Marker>
-              )
-            ))}
+              ) : null
+            )}
           </MapContainer>
         </Col>
       </Row>
