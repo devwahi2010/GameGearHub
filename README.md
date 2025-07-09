@@ -3,6 +3,7 @@ GameGearHub is a full-stack rental marketplace where users in Bangalore can list
 • 🚀 Live Demo:
 • • Backend: https://gamegearhub.onrender.com
 • • Frontend: https://gamegearhub-frontend.netlify.app
+🚀 Fully Deployed Site: https://iridescent-entremet-16a037.netlify.app/explore
 📌 Features
 • ✅ Email/password authentication using JWT
 • ✅ Custom user model and secure session handling
