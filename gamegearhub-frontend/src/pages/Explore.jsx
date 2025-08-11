@@ -1,37 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axiosInstance from '../api/axios';
 import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// 🛠️ Fix Leaflet marker icons
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// 🔍 Smooth fly-to map focus
-function MapFlyTo({ coords }) {
-  const map = useMap();
-  useEffect(() => {
-    if (coords) {
-      map.flyTo([parseFloat(coords.latitude), parseFloat(coords.longitude)], 14, { duration: 1.5 });
-    }
-  }, [coords, map]);
-  return null;
-}
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 function Explore() {
   const [devices, setDevices] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);
   const [search, setSearch] = useState('');
-  const [focusedCoords, setFocusedCoords] = useState(null);
+  const mapRef = useRef(null);
+  const mapContainer = useRef(null);
   const navigate = useNavigate();
 
+  // 🔄 Fetch all public devices
   useEffect(() => {
     axiosInstance.get('public-devices/')
       .then(res => {
@@ -41,22 +23,90 @@ function Explore() {
       .catch(console.error);
   }, []);
 
+  // 🗺️ Initialize Bangalore-only MapLibre
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      style: `https://api.maptiler.com/maps/streets/style.json?key=${apiKey}`,
+      center: [77.5946, 12.9716], // Bangalore center
+      zoom: 11,
+      maxZoom: 16,
+      minZoom: 10,
+      maxBounds: [
+        [77.45, 12.80], // Southwest bounds of Bangalore
+        [77.75, 13.10]  // Northeast bounds of Bangalore
+      ]
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    mapRef.current = map;
+
+    return () => map.remove();
+  }, []);
+
+  // 📍 Render markers for filtered devices
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    // Remove old markers
+    if (map._deviceMarkers) {
+      map._deviceMarkers.forEach(marker => marker.remove());
+    }
+
+    // Add new markers
+    map._deviceMarkers = filteredDevices.map(dev => {
+      if (!dev.latitude || !dev.longitude) return null;
+
+      const marker = new maplibregl.Marker()
+        .setLngLat([parseFloat(dev.longitude), parseFloat(dev.latitude)])
+        .setPopup(
+          new maplibregl.Popup({ offset: 25 }).setHTML(`
+            <strong>${dev.title}</strong><br/>
+            ₹${dev.price_per_day}/day<br/>
+            ${dev.city}<br/>
+            <button id="view-${dev.id}" class="btn btn-sm btn-link p-0 mt-1">View</button>
+          `)
+        )
+        .addTo(map);
+
+      marker.getElement().addEventListener('click', () => {
+        setTimeout(() => {
+          const btn = document.getElementById(`view-${dev.id}`);
+          if (btn) {
+            btn.onclick = () => navigate(`/devices/${dev.id}`);
+          }
+        }, 200);
+      });
+
+      return marker;
+    }).filter(Boolean);
+  }, [filteredDevices, navigate]);
+
   const handleSearch = (e) => {
     const keyword = e.target.value.toLowerCase();
     setSearch(keyword);
     const filtered = devices.filter(d =>
-      d.title.toLowerCase().includes(keyword) || d.city.toLowerCase().includes(keyword)
+      d.title.toLowerCase().includes(keyword) ||
+      d.city.toLowerCase().includes(keyword)
     );
     setFilteredDevices(filtered);
   };
 
+  const handleFlyTo = (lat, lng) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [lng, lat], zoom: 13, speed: 1.2 });
+    }
+  };
+
   return (
     <Container fluid className="mt-4">
-      <h2 className="mb-3 text-center">🔍 Explore Rentable Devices Near You</h2>
+      <h2 className="mb-3 text-center">🔍 Explore Rentable Devices in Bangalore</h2>
 
       <Row>
         {/* Sidebar */}
-        <Col md={4} className="pe-md-0 mb-3">
+        <Col md={4}>
           <Form.Control
             type="text"
             placeholder="Search by title or city..."
@@ -71,7 +121,7 @@ function Explore() {
                 <Card.Img
                   variant="top"
                   src={dev.image}
-                  alt={`${dev.title} image`}
+                  alt={dev.title}
                   style={{ height: '160px', objectFit: 'cover' }}
                 />
               )}
@@ -79,17 +129,12 @@ function Explore() {
                 <Card.Title>{dev.title}</Card.Title>
                 <Card.Text>{dev.city} • ₹{dev.price_per_day}/day</Card.Text>
                 <div className="d-flex justify-content-between">
-                  <Button variant="primary" size="sm" onClick={() => navigate(`/devices/${dev.id}`)}>View</Button>
+                  <Button size="sm" variant="primary" onClick={() => navigate(`/devices/${dev.id}`)}>View</Button>
                   {dev.latitude && dev.longitude && (
                     <Button
-                      variant="outline-secondary"
                       size="sm"
-                      onClick={() =>
-                        setFocusedCoords({
-                          latitude: parseFloat(dev.latitude),
-                          longitude: parseFloat(dev.longitude),
-                        })
-                      }
+                      variant="outline-secondary"
+                      onClick={() => handleFlyTo(parseFloat(dev.latitude), parseFloat(dev.longitude))}
                     >
                       📍 Locate
                     </Button>
@@ -100,44 +145,12 @@ function Explore() {
           ))}
         </Col>
 
-        {/* Map */}
+        {/* Map Container */}
         <Col md={8}>
-          <MapContainer
-            center={[20.5937, 78.9629]} // Center on India
-            zoom={5}
-            scrollWheelZoom={true}
-            style={{ height: '80vh', width: '100%' }}
-          >
-            {/* ✅ OSM India tile server */}
-            <TileLayer
-              url="https://tile.osmindia.org/osm/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://osm-india.org/">OSM India</a> contributors'
-            />
-
-            {focusedCoords && <MapFlyTo coords={focusedCoords} />}
-
-            {filteredDevices.map((dev) =>
-              dev.latitude && dev.longitude ? (
-                <Marker
-                  key={dev.id}
-                  position={[parseFloat(dev.latitude), parseFloat(dev.longitude)]}
-                >
-                  <Popup>
-                    <strong>{dev.title}</strong><br />
-                    ₹{dev.price_per_day}/day<br />
-                    {dev.city}<br />
-                    <Button
-                      size="sm"
-                      variant="link"
-                      onClick={() => navigate(`/devices/${dev.id}`)}
-                    >
-                      View
-                    </Button>
-                  </Popup>
-                </Marker>
-              ) : null
-            )}
-          </MapContainer>
+          <div
+            ref={mapContainer}
+            style={{ height: '80vh', width: '100%', borderRadius: '6px', overflow: 'hidden' }}
+          />
         </Col>
       </Row>
     </Container>
