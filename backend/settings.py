@@ -87,10 +87,10 @@ if IS_RENDER:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'gamegearhub_db_2',
-            'USER': 'gamegearhub_db_2_user',
-            'PASSWORD': '8ys5pLK3891bObnrfqJYlHqJYDkATt0I',
-            'HOST': 'dpg-d1n93bur433s73bi9n4g-a',
+            'NAME': 'gamegearhubdb3',
+            'USER': 'gamegearhubdb3_user',
+            'PASSWORD': 'm8gUCEJvjP64TNBMZu4Rt4dZENfoQDAZ',
+            'HOST': 'dpg-d2co76vdiees73frs71g-a',
             'PORT': '5432',
         }
     }
